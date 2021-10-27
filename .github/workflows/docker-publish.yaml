@@ -65,4 +65,5 @@ jobs:
           context: ./spark-3.1.2-bin-hadoop3.2
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
+          file: Dockerfile
           labels: ${{ steps.meta.outputs.labels }}
