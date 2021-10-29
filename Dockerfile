@@ -75,10 +75,10 @@ ENV PATH="/usr/bin/miniconda/bin:$PATH"
 #     # Removed the .cache to save space
 #     rm -r /root/.cache && rm -rf /var/cache/apt/*
 
-USER ${spark_uid}
-
 RUN conda install --quiet --yes pandas pyarrow boto3 s3fs \
     && conda clean --all -f -y
+    
+USER ${spark_uid}
 
 COPY python/pyspark ${SPARK_HOME}/python/pyspark
 COPY python/lib ${SPARK_HOME}/python/lib
