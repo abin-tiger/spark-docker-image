@@ -57,10 +57,6 @@ WORKDIR /opt/spark/work-dir
 RUN chmod g+w /opt/spark/work-dir
 RUN chmod a+x /opt/decom.sh
 
-# Specify the User that the actual main process will run as
-USER ${spark_uid}
-
-
 # Reset to root to run installation tasks
 USER 0
 
@@ -72,12 +68,14 @@ RUN wget \
     && rm -f Miniconda3-latest-Linux-x86_64.sh
 
 ENV PATH="/usr/bin/miniconda/bin:$PATH"
-RUN python --version
+
 # RUN apt-get update && \
 #     apt install -y python3 python3-pip && \
 #     pip3 install --upgrade pip setuptools && \
 #     # Removed the .cache to save space
 #     rm -r /root/.cache && rm -rf /var/cache/apt/*
+
+USER ${spark_uid}
 
 RUN conda install --quiet --yes pandas pyarrow boto3 s3fs \
     && conda clean --all -f -y
@@ -85,14 +83,9 @@ RUN conda install --quiet --yes pandas pyarrow boto3 s3fs \
 COPY python/pyspark ${SPARK_HOME}/python/pyspark
 COPY python/lib ${SPARK_HOME}/python/lib
 
-WORKDIR /opt/spark/work-dir
-ENTRYPOINT [ "/opt/entrypoint.sh" ]
-
-# Specify the User that the actual main process will run as
-ARG spark_uid=185
-USER ${spark_uid}
-
-
 ADD https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.874/aws-java-sdk-bundle-1.11.874.jar \
     https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.2.0/hadoop-aws-3.2.0.jar \
     /opt/spark/jars/
+
+WORKDIR /opt/spark/work-dir
+ENTRYPOINT [ "/opt/entrypoint.sh" ]
