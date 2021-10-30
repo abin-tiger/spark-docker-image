@@ -11,7 +11,7 @@ WORKDIR /tmp
 RUN wget https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/${PACKAGE_NAME}.tgz \
     && tar -xvf ${PACKAGE_NAME}.tgz
 
-FROM openjdk:11-slim-buster
+FROM openjdk:11-slim
 
 ARG PACKAGE_NAME
 ARG spark_uid=185
@@ -21,7 +21,7 @@ RUN set -ex && \
     sed -i 's/http:\/\/deb.\(.*\)/https:\/\/deb.\1/g' /etc/apt/sources.list && \
     apt-get update && \
     ln -s /lib /lib64 && \
-    apt install -y bash tini libc6 libpam-modules krb5-user libnss3 procps && \
+    apt install -y bash tini libc6 libpam-modules krb5-user libnss3 procps wget && \
     mkdir -p /opt/spark && \
     mkdir -p /opt/spark/examples && \
     mkdir -p /opt/spark/work-dir && \
@@ -51,8 +51,8 @@ RUN chmod a+x /opt/decom.sh
 USER 0
 
 RUN mkdir ${SPARK_HOME}/python
-RUN curl \
-    https://repo.anaconda.com/miniconda/Miniconda3-py39_4.9.2-Linux-x86_64.sh > Miniconda3-latest-Linux-x86_64.sh \
+RUN wget \
+    https://repo.anaconda.com/miniconda/Miniconda3-py39_4.9.2-Linux-x86_64.sh -O Miniconda3-latest-Linux-x86_64.sh \
     && bash ./Miniconda3-latest-Linux-x86_64.sh -b -p /usr/bin/miniconda \
     && rm -f Miniconda3-latest-Linux-x86_64.sh
 
