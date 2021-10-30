@@ -11,7 +11,7 @@ WORKDIR /tmp
 RUN wget https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/${PACKAGE_NAME}.tgz \
     && tar -xvf ${PACKAGE_NAME}.tgz
 
-FROM openjdk:11-slim
+FROM openjdk:11-jre-slim
 
 ARG PACKAGE_NAME
 ARG spark_uid=185
