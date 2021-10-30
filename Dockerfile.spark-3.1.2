@@ -59,8 +59,7 @@ RUN wget \
 
 ENV PATH="/usr/bin/miniconda/bin:$PATH"
 
-RUN pip install --no-cache-dir --prefer-binary pandas pyarrow boto3 s3fs \
-    && conda clean --all -f -y
+RUN pip install --no-cache-dir --prefer-binary pandas pyarrow boto3 s3fs
     
 USER ${spark_uid}
 
