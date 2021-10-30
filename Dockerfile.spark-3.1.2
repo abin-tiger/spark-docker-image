@@ -1,0 +1,71 @@
+FROM cimg/base:2021.10 as downloader
+
+WORKDIR /tmp
+
+ENV SPARK_VERSION=3.1.2
+ENV PACKAGE_NAME=spark-3.1.2-bin-hadoop3.2
+
+RUN wget https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/${PACKAGE_NAME}.tgz \
+    && tar -xvf ${PACKAGE_NAME}.tgz
+
+FROM openjdk:11-slim
+
+ARG spark_uid=185
+ARG spark_location=/tmp/${PACKAGE_NAME}
+
+RUN set -ex && \
+    sed -i 's/http:\/\/deb.\(.*\)/https:\/\/deb.\1/g' /etc/apt/sources.list && \
+    apt-get update && \
+    ln -s /lib /lib64 && \
+    apt install -y bash tini libc6 libpam-modules krb5-user libnss3 procps && \
+    mkdir -p /opt/spark && \
+    mkdir -p /opt/spark/examples && \
+    mkdir -p /opt/spark/work-dir && \
+    touch /opt/spark/RELEASE && \
+    rm /bin/sh && \
+    ln -sv /bin/bash /bin/sh && \
+    echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
+    chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
+    rm -rf /var/cache/apt/*
+
+COPY --from=downloader ${spark_location}/jars /opt/spark/jars
+COPY --from=downloader ${spark_location}/bin /opt/spark/bin
+COPY --from=downloader ${spark_location}/sbin /opt/spark/sbin
+COPY --from=downloader ${spark_location}/kubernetes/dockerfiles/spark/entrypoint.sh /opt/
+COPY --from=downloader ${spark_location}/kubernetes/dockerfiles/spark/decom.sh /opt/
+COPY --from=downloader ${spark_location}/examples /opt/spark/examples
+COPY --from=downloader ${spark_location}/kubernetes/tests /opt/spark/tests
+COPY --from=downloader ${spark_location}/data /opt/spark/data
+
+ENV SPARK_HOME /opt/spark
+
+WORKDIR /opt/spark/work-dir
+RUN chmod g+w /opt/spark/work-dir
+RUN chmod a+x /opt/decom.sh
+
+# Reset to root to run installation tasks
+USER 0
+
+RUN mkdir ${SPARK_HOME}/python
+RUN apt-get update && apt install wget -y
+RUN wget \
+    https://repo.anaconda.com/miniconda/Miniconda3-py39_4.9.2-Linux-x86_64.sh -O Miniconda3-latest-Linux-x86_64.sh \
+    && bash ./Miniconda3-latest-Linux-x86_64.sh -b -p /usr/bin/miniconda \
+    && rm -f Miniconda3-latest-Linux-x86_64.sh
+
+ENV PATH="/usr/bin/miniconda/bin:$PATH"
+
+RUN pip install --no-cache-dir --prefer-binary pandas pyarrow boto3 s3fs \
+    && conda clean --all -f -y
+    
+USER ${spark_uid}
+
+COPY --from=downloader ${spark_location}/python/pyspark ${SPARK_HOME}/python/pyspark
+COPY --from=downloader ${spark_location}/python/lib ${SPARK_HOME}/python/lib
+
+ADD https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.874/aws-java-sdk-bundle-1.11.874.jar \
+    https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.2.0/hadoop-aws-3.2.0.jar \
+    /opt/spark/jars/
+
+WORKDIR /opt/spark/work-dir
+ENTRYPOINT [ "/opt/entrypoint.sh" ]

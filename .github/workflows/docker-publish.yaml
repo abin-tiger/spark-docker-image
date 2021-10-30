@@ -33,12 +33,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      
-      - name: Download Spark
-        run: |
-          wget https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop3.2.tgz
-          tar -xvf spark-3.1.2-bin-hadoop3.2.tgz
-      
+
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
       - name: Log into registry ${{ env.REGISTRY }}
@@ -62,8 +57,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
-          context: ./spark-3.1.2-bin-hadoop3.2
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
-          file: Dockerfile
+          file: Dockerfile.spark-3.1.2
           labels: ${{ steps.meta.outputs.labels }}
