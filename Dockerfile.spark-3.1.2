@@ -2,14 +2,15 @@ FROM cimg/base:2021.10 as downloader
 
 WORKDIR /tmp
 
-ENV SPARK_VERSION=3.1.2
-ENV PACKAGE_NAME=spark-3.1.2-bin-hadoop3.2
+ARG SPARK_VERSION=3.1.2
+ARG PACKAGE_NAME=spark-3.1.2-bin-hadoop3.2
 
 RUN wget https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/${PACKAGE_NAME}.tgz \
     && tar -xvf ${PACKAGE_NAME}.tgz
 
 FROM openjdk:11-slim
 
+ARG PACKAGE_NAME
 ARG spark_uid=185
 ARG spark_location=/tmp/${PACKAGE_NAME}
 
