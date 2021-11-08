@@ -47,8 +47,7 @@ COPY --from=downloader ${spark_location}/data /opt/spark/data
 ENV SPARK_HOME /opt/spark
 
 WORKDIR /opt/spark/work-dir
-RUN chmod g+w /opt/spark/work-dir
-RUN chmod a+x /opt/decom.sh
+RUN chmod g+w /opt/spark/work-dir && chmod a+x /opt/decom.sh && chown -R root:root $SPARK_HOME
 
 RUN mkdir ${SPARK_HOME}/python
 RUN apt-get update && apt install wget -y && apt clean
