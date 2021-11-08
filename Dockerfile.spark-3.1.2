@@ -13,6 +13,9 @@ RUN wget https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/${PACKAGE_NAME}.t
 
 FROM openjdk:11-jre-slim
 
+# Reset to root to run installation tasks
+USER 0
+
 ARG PACKAGE_NAME
 ARG spark_uid=185
 ARG spark_location=/tmp/${PACKAGE_NAME}
@@ -47,9 +50,6 @@ WORKDIR /opt/spark/work-dir
 RUN chmod g+w /opt/spark/work-dir
 RUN chmod a+x /opt/decom.sh
 
-# Reset to root to run installation tasks
-USER 0
-
 RUN mkdir ${SPARK_HOME}/python
 RUN apt-get update && apt install wget -y && apt clean
 RUN wget \
@@ -60,8 +60,6 @@ RUN wget \
 ENV PATH="/usr/bin/miniconda/bin:$PATH"
 
 RUN pip install --no-cache-dir --prefer-binary pandas pyarrow boto3 s3fs
-    
-USER ${spark_uid}
 
 COPY --from=downloader ${spark_location}/python/pyspark ${SPARK_HOME}/python/pyspark
 COPY --from=downloader ${spark_location}/python/lib ${SPARK_HOME}/python/lib
@@ -72,3 +70,7 @@ ADD https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.874/aw
 
 WORKDIR /opt/spark/work-dir
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
+
+# Specify the User that the actual main process will run as
+ARG spark_uid=185
+USER ${spark_uid}
