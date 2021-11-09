@@ -50,7 +50,6 @@ WORKDIR /opt/spark/work-dir
 RUN chmod g+w /opt/spark/work-dir && chmod a+x /opt/decom.sh && chown -R root:root $SPARK_HOME
 
 RUN mkdir ${SPARK_HOME}/python
-RUN apt-get update && apt install wget -y && apt clean
 RUN wget \
     https://repo.anaconda.com/miniconda/Miniconda3-py39_4.9.2-Linux-x86_64.sh -O Miniconda3-latest-Linux-x86_64.sh \
     && bash ./Miniconda3-latest-Linux-x86_64.sh -b -p /usr/bin/miniconda \
