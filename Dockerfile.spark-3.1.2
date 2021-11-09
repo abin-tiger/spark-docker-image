@@ -53,7 +53,7 @@ RUN mkdir ${SPARK_HOME}/python
 RUN wget \
     https://repo.anaconda.com/miniconda/Miniconda3-py39_4.9.2-Linux-x86_64.sh -O Miniconda3-latest-Linux-x86_64.sh \
     && bash ./Miniconda3-latest-Linux-x86_64.sh -b -p /usr/bin/miniconda \
-    && rm -f Miniconda3-latest-Linux-x86_64.sh
+    && rm -f Miniconda3-latest-Linux-x86_64.sh \
     && /usr/bin/miniconda/bin/pip install --no-cache-dir --prefer-binary pandas pyarrow boto3 s3fs
 
 ENV PATH="/usr/bin/miniconda/bin:$PATH"
