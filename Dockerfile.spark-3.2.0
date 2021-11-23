@@ -56,14 +56,14 @@ RUN wget \
     && rm -f Miniconda3-latest-Linux-x86_64.sh \
     && /usr/bin/miniconda/bin/pip install --no-cache-dir --prefer-binary pandas pyarrow
 
-ENV PATH="/usr/bin/miniconda/bin:$PATH"
-
 COPY --from=downloader ${spark_extracted_path}/python/pyspark ${SPARK_HOME}/python/pyspark
 COPY --from=downloader ${spark_extracted_path}/python/lib ${SPARK_HOME}/python/lib
 
 RUN wget https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.901/aws-java-sdk-bundle-1.11.901.jar \
     https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.1/hadoop-aws-3.3.1.jar \
     -P $SPARK_HOME/jars/
+
+ENV PATH="${SPARK_HOME}/bin:${SPARK_HOME}/sbin:/usr/bin/miniconda/bin:$PATH"
 
 WORKDIR /opt/spark/work-dir
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
