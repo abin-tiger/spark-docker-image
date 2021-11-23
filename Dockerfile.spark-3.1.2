@@ -61,9 +61,9 @@ ENV PATH="/usr/bin/miniconda/bin:$PATH"
 COPY --from=downloader ${spark_location}/python/pyspark ${SPARK_HOME}/python/pyspark
 COPY --from=downloader ${spark_location}/python/lib ${SPARK_HOME}/python/lib
 
-ADD https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.874/aws-java-sdk-bundle-1.11.874.jar /opt/spark/jars/
-
-ADD https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.2.0/hadoop-aws-3.2.0.jar /opt/spark/jars/
+RUN wget https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.874/aws-java-sdk-bundle-1.11.874.jar \
+    https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.2.0/hadoop-aws-3.2.0.jar \
+    -P $SPARK_HOME/jars/
 
 WORKDIR /opt/spark/work-dir
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
