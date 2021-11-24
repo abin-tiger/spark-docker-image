@@ -17,7 +17,6 @@ FROM openjdk:11-jre-slim
 USER 0
 
 ARG PACKAGE_NAME
-ARG spark_uid=185
 ARG spark_extracted_path=/tmp/${PACKAGE_NAME}
 
 RUN set -ex && \
@@ -47,7 +46,7 @@ COPY --from=downloader ${spark_extracted_path}/data /opt/spark/data
 ENV SPARK_HOME /opt/spark
 
 WORKDIR /opt/spark/work-dir
-RUN chmod g+w /opt/spark/work-dir && chmod a+x /opt/decom.sh && chown -R $spark_uid:$spark_uid $SPARK_HOME
+RUN chmod g+w /opt/spark/work-dir && chmod a+x /opt/decom.sh
 
 RUN mkdir ${SPARK_HOME}/python
 RUN wget \
@@ -71,4 +70,5 @@ WORKDIR /opt/spark/work-dir
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
 
 # Specify the User that the actual main process will run as
+ARG spark_uid=185
 USER ${spark_uid}
