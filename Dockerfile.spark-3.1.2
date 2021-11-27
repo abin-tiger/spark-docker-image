@@ -26,6 +26,9 @@ RUN pip install --no-cache-dir --prefer-binary pandas pyarrow
 
 FROM openjdk:11-jre-slim
 
+LABEL org.opencontainers.image.description "Docker image for Spark 3.1.2"
+LABEL org.opencontainers.image.authors "Abin Joseph <abin.joseph@tigeranalytics.com>"
+
 ARG PACKAGE_NAME
 ARG SPARK_VERSION
 ARG spark_extracted_path=/tmp/${PACKAGE_NAME}
