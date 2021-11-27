@@ -26,9 +26,6 @@ RUN pip install --no-cache-dir --prefer-binary pandas pyarrow
 
 FROM openjdk:11-jre-slim
 
-# Reset to root to run installation tasks
-USER 0
-
 ARG PACKAGE_NAME
 ARG SPARK_VERSION
 ARG spark_extracted_path=/tmp/${PACKAGE_NAME}
