@@ -8,7 +8,7 @@ ARG SPARK_VERSION
 
 WORKDIR /tmp
 
-RUN wget https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/${PACKAGE_NAME}.tgz \
+RUN wget -q https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/${PACKAGE_NAME}.tgz \
     && tar -xvf ${PACKAGE_NAME}.tgz
 
 # All the extra jars needed
@@ -17,7 +17,7 @@ RUN wget -q https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.1
     -P /tmp/jars/
 
 # Create python environment. This is only required if you need pyspark.
-RUN wget \
+RUN wget -q \
     https://repo.anaconda.com/miniconda/Miniconda3-py39_4.9.2-Linux-x86_64.sh -O Miniconda3-latest-Linux-x86_64.sh \
     && bash ./Miniconda3-latest-Linux-x86_64.sh -b -p /usr/bin/miniconda \
     && rm -f Miniconda3-latest-Linux-x86_64.sh
