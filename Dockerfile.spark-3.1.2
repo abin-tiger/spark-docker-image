@@ -11,19 +11,34 @@ WORKDIR /tmp
 RUN wget https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/${PACKAGE_NAME}.tgz \
     && tar -xvf ${PACKAGE_NAME}.tgz
 
+# All the extra jars needed
+RUN wget -q https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.874/aws-java-sdk-bundle-1.11.874.jar \
+    https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.2.0/hadoop-aws-3.2.0.jar \
+    -P /tmp/jars/
+
+# Create python environment. This is only required if you need pyspark.
+RUN wget \
+    https://repo.anaconda.com/miniconda/Miniconda3-py39_4.9.2-Linux-x86_64.sh -O Miniconda3-latest-Linux-x86_64.sh \
+    && bash ./Miniconda3-latest-Linux-x86_64.sh -b -p /usr/bin/miniconda \
+    && rm -f Miniconda3-latest-Linux-x86_64.sh
+ENV PATH="/usr/bin/miniconda/bin:$PATH"
+RUN pip install --no-cache-dir --prefer-binary pandas pyarrow
+
 FROM openjdk:11-jre-slim
 
 # Reset to root to run installation tasks
 USER 0
 
 ARG PACKAGE_NAME
+ARG SPARK_VERSION
 ARG spark_extracted_path=/tmp/${PACKAGE_NAME}
+ENV SPARK_VERSION=${SPARK_VERSION}
 
 RUN set -ex && \
     sed -i 's/http:\/\/deb.\(.*\)/https:\/\/deb.\1/g' /etc/apt/sources.list && \
     apt-get update && \
     ln -s /lib /lib64 && \
-    apt install -y bash tini libc6 libpam-modules krb5-user libnss3 procps wget && \
+    apt install -y bash tini libc6 libpam-modules krb5-user libnss3 procps && \
     mkdir -p /opt/spark && \
     mkdir -p /opt/spark/examples && \
     mkdir -p /opt/spark/work-dir && \
@@ -48,23 +63,20 @@ ENV SPARK_HOME /opt/spark
 WORKDIR /opt/spark/work-dir
 RUN chmod g+w /opt/spark/work-dir && chmod a+x /opt/decom.sh
 
+# Add the extra jars
+COPY --from=downloader /tmp/jars/* $SPARK_HOME/jars/
+
 RUN mkdir ${SPARK_HOME}/python
-RUN wget \
-    https://repo.anaconda.com/miniconda/Miniconda3-py39_4.9.2-Linux-x86_64.sh -O Miniconda3-latest-Linux-x86_64.sh \
-    && bash ./Miniconda3-latest-Linux-x86_64.sh -b -p /usr/bin/miniconda \
-    && rm -f Miniconda3-latest-Linux-x86_64.sh \
-    && /usr/bin/miniconda/bin/pip install --no-cache-dir --prefer-binary pandas pyarrow
 
 COPY --from=downloader ${spark_extracted_path}/python/pyspark ${SPARK_HOME}/python/pyspark
 COPY --from=downloader ${spark_extracted_path}/python/lib ${SPARK_HOME}/python/lib
 
-RUN wget https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.874/aws-java-sdk-bundle-1.11.874.jar \
-    https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.2.0/hadoop-aws-3.2.0.jar \
-    -P $SPARK_HOME/jars/
-
 ENV PATH="${SPARK_HOME}/bin:${SPARK_HOME}/sbin:/usr/bin/miniconda/bin:$PATH"
 # py4j path for spark version can be found at https://github.com/abin-tiger/spark/blob/master/sbin/spark-config.sh#L31
 ENV PYTHONPATH="${SPARK_HOME}/python/lib/py4j-0.10.9-src.zip:${SPARK_HOME}/python:${PYTHONPATH}"
+
+# Copying the python environment here. This is only required if you need pyspark.
+COPY --from=builder /usr/bin/miniconda /usr/bin/miniconda
 
 WORKDIR /opt/spark/work-dir
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
