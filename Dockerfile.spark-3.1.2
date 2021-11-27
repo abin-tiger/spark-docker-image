@@ -3,6 +3,8 @@ ARG PACKAGE_NAME=spark-3.1.2-bin-hadoop3.2
 
 FROM cimg/base:2021.10 as downloader
 
+USER root
+
 ARG PACKAGE_NAME
 ARG SPARK_VERSION
 
