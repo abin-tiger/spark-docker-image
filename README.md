@@ -13,7 +13,7 @@ The image contains:
 
 ## Using the images
 
-The images can be executed directly with docker, [Spark submit](https://spark.apache.org/docs/latest/running-on-kubernetes.html#cluster-mode) or Kubernetes Spark operator.
+The images can be executed directly with docker, [Spark submit](https://spark.apache.org/docs/latest/running-on-kubernetes.html#cluster-mode) or [Kubernetes Spark operator](https://github.com/GoogleCloudPlatform/spark-on-k8s-operator).
 
 Executing user docker:
 
