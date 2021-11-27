@@ -73,13 +73,12 @@ RUN mkdir ${SPARK_HOME}/python
 COPY --from=downloader ${spark_extracted_path}/python/pyspark ${SPARK_HOME}/python/pyspark
 COPY --from=downloader ${spark_extracted_path}/python/lib ${SPARK_HOME}/python/lib
 
+# Copying the python environment here. This is only required if you need pyspark.
+COPY --from=downloader /usr/bin/miniconda /usr/bin/miniconda
+
 ENV PATH="${SPARK_HOME}/bin:${SPARK_HOME}/sbin:/usr/bin/miniconda/bin:$PATH"
 # py4j path for spark version can be found at https://github.com/abin-tiger/spark/blob/master/sbin/spark-config.sh#L31
 ENV PYTHONPATH="${SPARK_HOME}/python/lib/py4j-0.10.9-src.zip:${SPARK_HOME}/python:${PYTHONPATH}"
-
-# Copying the python environment here. This is only required if you need pyspark.
-COPY --from=downloader /usr/bin/miniconda /usr/bin/miniconda
-ENV PATH="/usr/bin/miniconda/bin:$PATH"
 
 WORKDIR /opt/spark/work-dir
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
