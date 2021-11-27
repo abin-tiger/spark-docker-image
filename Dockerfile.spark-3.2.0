@@ -62,9 +62,6 @@ COPY --from=downloader ${spark_extracted_path}/data /opt/spark/data
 
 ENV SPARK_HOME /opt/spark
 
-WORKDIR /opt/spark/work-dir
-RUN chmod g+w /opt/spark/work-dir && chmod a+x /opt/decom.sh && chown -R root:root $SPARK_HOME
-
 # Add the extra jars
 COPY --from=downloader /tmp/jars/* $SPARK_HOME/jars/
 
@@ -81,6 +78,8 @@ ENV PATH="${SPARK_HOME}/bin:${SPARK_HOME}/sbin:/usr/bin/miniconda/bin:$PATH"
 ENV PYTHONPATH="${SPARK_HOME}/python/lib/py4j-0.10.9.2-src.zip:${SPARK_HOME}/python:${PYTHONPATH}"
 
 WORKDIR /opt/spark/work-dir
+RUN chmod g+w /opt/spark/work-dir && chmod a+x /opt/decom.sh
+
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
 
 # Specify the User that the actual main process will run as
