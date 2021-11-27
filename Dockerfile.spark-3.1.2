@@ -1,14 +1,15 @@
 ARG SPARK_VERSION=3.1.2
 ARG PACKAGE_NAME=spark-3.1.2-bin-hadoop3.2
+ARG SPARK_DIST_URL=https://dlcdn.apache.org/spark/spark-3.1.2/spark-3.1.2-bin-hadoop3.2.tgz
 
 FROM cimg/base:2021.10 as downloader
 
 ARG PACKAGE_NAME
-ARG SPARK_VERSION
+ARG SPARK_DIST_URL
 
 WORKDIR /tmp
 
-RUN wget -q https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/${PACKAGE_NAME}.tgz \
+RUN wget -q ${SPARK_DIST_URL} \
     && tar -xvf ${PACKAGE_NAME}.tgz
 
 # All the extra jars needed
