@@ -63,7 +63,7 @@ COPY --from=downloader ${spark_extracted_path}/data /opt/spark/data
 ENV SPARK_HOME /opt/spark
 
 WORKDIR /opt/spark/work-dir
-RUN chmod g+w /opt/spark/work-dir && chmod a+x /opt/decom.sh
+RUN chmod g+w /opt/spark/work-dir && chmod a+x /opt/decom.sh && chown -R root:root $SPARK_HOME
 
 # Add the extra jars
 COPY --from=downloader /tmp/jars/* $SPARK_HOME/jars/
