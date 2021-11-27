@@ -1,6 +1,6 @@
-# SBD Spark Base Docker Images
+# Spark Docker Images
 
-The Dockerfiles in this repository are based on the ones from [Spark source repository](https://github.com/apache/spark/tree/master/resource-managers/kubernetes/docker/src/main/dockerfiles/spark). It was refactored to include the SBD libs required and to make it flexible.
+The Dockerfiles in this repository are based on the ones from [Spark source repository](https://github.com/apache/spark/tree/master/resource-managers/kubernetes/docker/src/main/dockerfiles/spark). It was refactored to make it flexible.
 
 The images built are stored in the [GitHub Packages docker repository](https://github.com/users/abin-tiger/packages/container/package/spark-docker-image). Available tags: 3.1.2, 3.2.0.
 
@@ -10,6 +10,18 @@ The image contains:
 3. Pyspark library.
 4. Dependancies for AWS S3.
 
+
+## Using the images
+
+The images can be executed directly with docker, [Spark submit](https://spark.apache.org/docs/latest/running-on-kubernetes.html#cluster-mode) or Kubernetes Spark operator.
+
+Executing user docker:
+
+```bash
+docker run ghcr.io/abin-tiger/spark-docker-image:3.1.2 spark-submit --class org.apache.spark.examples.SparkPi local:///opt/spark/examples/jars/spark-examples_2.12-3.1.2.jar
+```
+
+## More details
 
 The image build is divided into two stages: 
 1. Download - The downloader stage is just used to download and extract any files required. The circle ci image used in here has all the necessary libs pre-installed.. This stage downloads the spark package from [Downloads | Apache Spark](https://spark.apache.org/downloads.html).
