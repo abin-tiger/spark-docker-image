@@ -79,6 +79,7 @@ ENV PYTHONPATH="${SPARK_HOME}/python/lib/py4j-0.10.9-src.zip:${SPARK_HOME}/pytho
 
 # Copying the python environment here. This is only required if you need pyspark.
 COPY --from=downloader /usr/bin/miniconda /usr/bin/miniconda
+ENV PATH="/usr/bin/miniconda/bin:$PATH"
 
 WORKDIR /opt/spark/work-dir
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
