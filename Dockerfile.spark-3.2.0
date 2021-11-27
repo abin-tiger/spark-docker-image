@@ -3,8 +3,6 @@ ARG PACKAGE_NAME=spark-3.2.0-bin-hadoop3.2
 
 FROM cimg/base:2021.10 as downloader
 
-USER root
-
 ARG PACKAGE_NAME
 ARG SPARK_VERSION
 
@@ -21,9 +19,9 @@ RUN wget -q https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.1
 # Create python environment. This is only required if you need pyspark.
 RUN wget -q \
     https://repo.anaconda.com/miniconda/Miniconda3-py39_4.9.2-Linux-x86_64.sh -O Miniconda3-latest-Linux-x86_64.sh \
-    && bash ./Miniconda3-latest-Linux-x86_64.sh -b -p /usr/bin/miniconda \
+    && bash ./Miniconda3-latest-Linux-x86_64.sh -b -p /tmp/miniconda \
     && rm -f Miniconda3-latest-Linux-x86_64.sh
-ENV PATH="/usr/bin/miniconda/bin:$PATH"
+ENV PATH="/tmp/miniconda/bin:$PATH"
 RUN pip install --no-cache-dir --prefer-binary pandas pyarrow
 
 FROM openjdk:11-jre-slim
@@ -71,7 +69,7 @@ COPY --from=downloader ${spark_extracted_path}/python/pyspark ${SPARK_HOME}/pyth
 COPY --from=downloader ${spark_extracted_path}/python/lib ${SPARK_HOME}/python/lib
 
 # Copying the python environment here. This is only required if you need pyspark.
-COPY --from=downloader /usr/bin/miniconda /usr/bin/miniconda
+COPY --from=downloader /tmp/miniconda /usr/bin/miniconda
 
 ENV PATH="${SPARK_HOME}/bin:${SPARK_HOME}/sbin:/usr/bin/miniconda/bin:$PATH"
 # py4j path for spark version can be found at https://github.com/abin-tiger/spark/blob/master/sbin/spark-config.sh#L31
