@@ -15,7 +15,7 @@ The image contains:
 
 The images can be executed directly with docker, [Spark submit](https://spark.apache.org/docs/latest/running-on-kubernetes.html#cluster-mode) or [Kubernetes Spark operator](https://github.com/GoogleCloudPlatform/spark-on-k8s-operator).
 
-Executing user docker:
+Executing with docker:
 
 ```bash
 docker run ghcr.io/abin-tiger/spark-docker-image:3.1.2 spark-submit --class org.apache.spark.examples.SparkPi local:///opt/spark/examples/jars/spark-examples_2.12-3.1.2.jar
