@@ -18,7 +18,7 @@ The images can be executed directly with docker, [Spark submit](https://spark.ap
 Executing with docker:
 
 ```bash
-docker run ghcr.io/abin-tiger/spark-docker-image:3.1.2 spark-submit --class org.apache.spark.examples.SparkPi local:///opt/spark/examples/jars/spark-examples_2.12-3.1.2.jar
+docker run --env SPARK_USER=spark ghcr.io/abin-tiger/spark-docker-image:3.1.2 spark-submit --class org.apache.spark.examples.SparkPi local:///opt/spark/examples/jars/spark-examples_2.12-3.1.2.jar
 ```
 
 ## More details
