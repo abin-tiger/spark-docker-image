@@ -1,6 +1,6 @@
 ARG SPARK_VERSION=3.2.0
 ARG PACKAGE_NAME=spark-3.2.0-bin-hadoop3.2
-ARG SPARK_DIST_URL=https://dlcdn.apache.org/spark/spark-3.2.0/spark-3.2.0-bin-hadoop3.2.tgz
+ARG SPARK_DIST_URL=https://archive.apache.org/dist/spark/spark-3.2.0/spark-3.2.0-bin-hadoop3.2.tgz
 
 FROM cimg/base:2021.10 as downloader
 
