@@ -1,0 +1,104 @@
+ARG SPARK_VERSION=2.4.8
+ARG HADOOP_VERSION=3.1.0
+ARG PACKAGE_NAME=spark-2.4.8-bin-without-hadoop
+ARG SPARK_DIST_URL=https://archive.apache.org/dist/spark/spark-2.4.8/spark-2.4.8-bin-without-hadoop.tgz
+ARG HADOOP_DIST_URL=https://archive.apache.org/dist/hadoop/common/hadoop-3.1.0/hadoop-3.1.0.tar.gz
+
+FROM cimg/base:2021.10 as downloader
+
+ARG PACKAGE_NAME
+ARG SPARK_DIST_URL
+ARG HADOOP_DIST_URL
+
+WORKDIR /tmp
+
+RUN wget -q ${SPARK_DIST_URL} \
+    && tar -xvf ${PACKAGE_NAME}.tgz
+
+RUN wget -q ${HADOOP_DIST_URL} \
+    && tar -xvf hadoop-3.1.0.tar.gz
+
+RUN rm -rf hadoop-3.1.0/share/doc
+
+# All the extra jars needed
+RUN wget -q https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.874/aws-java-sdk-bundle-1.11.874.jar \
+    https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.2.0/hadoop-aws-3.2.0.jar \
+    -P /tmp/jars/
+
+# Create python environment. This is only required if you need pyspark.
+RUN wget -q \
+    https://repo.anaconda.com/miniconda/Miniconda3-py39_4.9.2-Linux-x86_64.sh -O Miniconda3-latest-Linux-x86_64.sh \
+    && bash ./Miniconda3-latest-Linux-x86_64.sh -b -p /tmp/miniconda \
+    && rm -f Miniconda3-latest-Linux-x86_64.sh
+ENV PATH="/tmp/miniconda/bin:$PATH"
+RUN pip install --no-cache-dir --prefer-binary pandas pyarrow
+
+FROM openjdk:11-jre-slim
+
+LABEL org.opencontainers.image.description "Docker image for Spark 3.1.2"
+LABEL org.opencontainers.image.authors "Abin Joseph <abin.joseph@tigeranalytics.com>"
+
+
+ARG PACKAGE_NAME
+ARG SPARK_VERSION
+ARG HADOOP_VERSION
+ARG spark_extracted_path=/tmp/${PACKAGE_NAME}
+ENV HADOOP_VERSION=${HADOOP_VERSION}
+ENV SPARK_VERSION=${SPARK_VERSION}
+
+RUN set -ex && \
+    sed -i 's/http:\/\/deb.\(.*\)/https:\/\/deb.\1/g' /etc/apt/sources.list && \
+    apt-get update && \
+    ln -s /lib /lib64 && \
+    apt install -y bash tini libc6 libpam-modules krb5-user libnss3 procps && \
+    mkdir -p /opt/spark && \
+    mkdir -p /opt/spark/examples && \
+    mkdir -p /opt/spark/work-dir && \
+    touch /opt/spark/RELEASE && \
+    rm /bin/sh && \
+    ln -sv /bin/bash /bin/sh && \
+    echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
+    chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
+    rm -rf /var/cache/apt/*
+
+COPY --from=downloader ${spark_extracted_path}/jars /opt/spark/jars
+COPY --from=downloader ${spark_extracted_path}/bin /opt/spark/bin
+COPY --from=downloader ${spark_extracted_path}/sbin /opt/spark/sbin
+COPY --from=downloader ${spark_extracted_path}/kubernetes/dockerfiles/spark/entrypoint.sh /opt/
+COPY --from=downloader ${spark_extracted_path}/kubernetes/dockerfiles/spark/decom.sh /opt/
+COPY --from=downloader ${spark_extracted_path}/examples /opt/spark/examples
+COPY --from=downloader ${spark_extracted_path}/kubernetes/tests /opt/spark/tests
+COPY --from=downloader ${spark_extracted_path}/data /opt/spark/data
+
+
+ENV HADOOP_HOME /usr/hadoop-$HADOOP_VERSION
+ENV HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
+ENV PATH $PATH:$HADOOP_HOME/bin
+COPY --chown=root:root --from=downloader ${spark_extracted_path}/hadoop-$HADOOP_VERSION $HADOOP_HOME
+ENV SPARK_DIST_CLASSPATH="$HADOOP_HOME/etc/hadoop/*:$HADOOP_HOME/share/hadoop/common/lib/*:$HADOOP_HOME/share/hadoop/common/*:$HADOOP_HOME/share/hadoop/hdfs/*:$HADOOP_HOME/share/hadoop/hdfs/lib/*:$HADOOP_HOME/share/hadoop/hdfs/*:$HADOOP_HOME/share/hadoop/yarn/lib/*:$HADOOP_HOME/share/hadoop/yarn/*:$HADOOP_HOME/share/hadoop/mapreduce/lib/*:$HADOOP_HOME/share/hadoop/mapreduce/*:$HADOOP_HOME/share/hadoop/tools/lib/*"
+
+ENV SPARK_HOME /opt/spark
+
+# Add the extra jars
+COPY --from=downloader /tmp/jars/* $SPARK_HOME/jars/
+
+RUN mkdir ${SPARK_HOME}/python
+
+COPY --from=downloader ${spark_extracted_path}/python/pyspark ${SPARK_HOME}/python/pyspark
+COPY --from=downloader ${spark_extracted_path}/python/lib ${SPARK_HOME}/python/lib
+
+# Copying the python environment here. This is only required if you need pyspark.
+COPY --from=downloader /tmp/miniconda /usr/bin/miniconda
+
+ENV PATH="${SPARK_HOME}/bin:${SPARK_HOME}/sbin:/usr/bin/miniconda/bin:$PATH"
+# py4j path for spark version can be found at https://github.com/abin-tiger/spark/blob/master/sbin/spark-config.sh#L31
+ENV PYTHONPATH="${SPARK_HOME}/python/lib/py4j-0.10.9.5-src.zip:${SPARK_HOME}/python:${PYTHONPATH}"
+
+WORKDIR /opt/spark/work-dir
+RUN chmod g+w /opt/spark/work-dir && chmod a+x /opt/decom.sh
+
+ENTRYPOINT [ "/opt/entrypoint.sh" ]
+
+# Specify the User that the actual main process will run as
+ARG spark_uid=185
+USER ${spark_uid}
