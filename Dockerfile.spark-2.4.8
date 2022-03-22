@@ -22,7 +22,7 @@ RUN rm -rf hadoop-3.1.0/share/doc
 
 # All the extra jars needed
 RUN wget -q https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.874/aws-java-sdk-bundle-1.11.874.jar \
-    https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.2.0/hadoop-aws-3.2.0.jar \
+    https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.2.0/hadoop-aws-3.1.0.jar \
     -P /tmp/jars/
 
 # Create python environment. This is only required if you need pyspark.
@@ -64,8 +64,6 @@ RUN set -ex && \
 COPY --from=downloader ${spark_extracted_path}/jars /opt/spark/jars
 COPY --from=downloader ${spark_extracted_path}/bin /opt/spark/bin
 COPY --from=downloader ${spark_extracted_path}/sbin /opt/spark/sbin
-COPY --from=downloader ${spark_extracted_path}/kubernetes/dockerfiles/spark/entrypoint.sh /opt/
-COPY --from=downloader ${spark_extracted_path}/kubernetes/dockerfiles/spark/decom.sh /opt/
 COPY --from=downloader ${spark_extracted_path}/examples /opt/spark/examples
 COPY --from=downloader ${spark_extracted_path}/kubernetes/tests /opt/spark/tests
 COPY --from=downloader ${spark_extracted_path}/data /opt/spark/data
@@ -74,7 +72,7 @@ COPY --from=downloader ${spark_extracted_path}/data /opt/spark/data
 ENV HADOOP_HOME /usr/hadoop-$HADOOP_VERSION
 ENV HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
 ENV PATH $PATH:$HADOOP_HOME/bin
-COPY --chown=root:root --from=downloader ${spark_extracted_path}/hadoop-$HADOOP_VERSION $HADOOP_HOME
+COPY --chown=root:root --from=downloader /tmp/hadoop-$HADOOP_VERSION $HADOOP_HOME
 ENV SPARK_DIST_CLASSPATH="$HADOOP_HOME/etc/hadoop/*:$HADOOP_HOME/share/hadoop/common/lib/*:$HADOOP_HOME/share/hadoop/common/*:$HADOOP_HOME/share/hadoop/hdfs/*:$HADOOP_HOME/share/hadoop/hdfs/lib/*:$HADOOP_HOME/share/hadoop/hdfs/*:$HADOOP_HOME/share/hadoop/yarn/lib/*:$HADOOP_HOME/share/hadoop/yarn/*:$HADOOP_HOME/share/hadoop/mapreduce/lib/*:$HADOOP_HOME/share/hadoop/mapreduce/*:$HADOOP_HOME/share/hadoop/tools/lib/*"
 
 ENV SPARK_HOME /opt/spark
@@ -95,7 +93,7 @@ ENV PATH="${SPARK_HOME}/bin:${SPARK_HOME}/sbin:/usr/bin/miniconda/bin:$PATH"
 ENV PYTHONPATH="${SPARK_HOME}/python/lib/py4j-0.10.9.5-src.zip:${SPARK_HOME}/python:${PYTHONPATH}"
 
 WORKDIR /opt/spark/work-dir
-RUN chmod g+w /opt/spark/work-dir && chmod a+x /opt/decom.sh
+RUN chmod g+w /opt/spark/work-dir
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
 
