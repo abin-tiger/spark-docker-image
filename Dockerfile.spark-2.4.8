@@ -66,6 +66,7 @@ COPY --from=downloader ${spark_extracted_path}/bin /opt/spark/bin
 COPY --from=downloader ${spark_extracted_path}/sbin /opt/spark/sbin
 COPY --from=downloader ${spark_extracted_path}/examples /opt/spark/examples
 COPY --from=downloader ${spark_extracted_path}/kubernetes/tests /opt/spark/tests
+COPY --from=downloader ${spark_extracted_path}/kubernetes/dockerfiles/spark/entrypoint.sh /opt/
 COPY --from=downloader ${spark_extracted_path}/data /opt/spark/data
 
 
