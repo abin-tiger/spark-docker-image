@@ -20,6 +20,11 @@ RUN wget -q ${HADOOP_DIST_URL} \
 
 RUN rm -rf hadoop-3.1.0/share/doc
 
+ENV HIVE_VERSION=3.1.2
+
+RUN wget -q https://archive.apache.org/dist/hive/hive-${HIVE_VERSION}/apache-hive-${HIVE_VERSION}-bin.tar.gz \
+    && tar -xvf apache-hive-${HIVE_VERSION}-bin.tar.gz
+
 # All the extra jars needed
 RUN wget -q https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.874/aws-java-sdk-bundle-1.11.874.jar \
     https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.1.0/hadoop-aws-3.1.0.jar \
@@ -75,6 +80,23 @@ ENV HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
 ENV PATH $PATH:$HADOOP_HOME/bin
 COPY --chown=root:root --from=downloader /tmp/hadoop-$HADOOP_VERSION $HADOOP_HOME
 ENV SPARK_DIST_CLASSPATH="$HADOOP_HOME/etc/hadoop/*:$HADOOP_HOME/share/hadoop/common/lib/*:$HADOOP_HOME/share/hadoop/common/*:$HADOOP_HOME/share/hadoop/hdfs/*:$HADOOP_HOME/share/hadoop/hdfs/lib/*:$HADOOP_HOME/share/hadoop/hdfs/*:$HADOOP_HOME/share/hadoop/yarn/lib/*:$HADOOP_HOME/share/hadoop/yarn/*:$HADOOP_HOME/share/hadoop/mapreduce/lib/*:$HADOOP_HOME/share/hadoop/mapreduce/*:$HADOOP_HOME/share/hadoop/tools/lib/*"
+
+ENV HIVE_VERSION=3.1.2
+ENV HIVE_HOME=/usr/hive
+ENV HIVE_CONF_DIR="${HIVE_HOME}/conf"
+ENV PATH "${PATH}:${HIVE_HOME}/bin"
+
+COPY --chown=root:root --from=downloader /tmp/apache-hive-${HIVE_VERSION}-bin ${HIVE_HOME}
+RUN mkdir -p "${HIVE_HOME}/hcatalog/var/log" \
+  && mkdir -p "${HIVE_HOME}/var/log" \
+  && mkdir -p "${HIVE_CONF_DIR}" \
+  && chmod 777 "${HIVE_HOME}/hcatalog/var/log" \
+  && chmod 777 "${HIVE_HOME}/var/log"
+  
+
+ENV PATH="${PATH}:${HIVE_HOME}/bin"
+ENV HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${HIVE_HOME}/lib/*"
+
 
 ENV SPARK_HOME /opt/spark
 
