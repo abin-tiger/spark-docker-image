@@ -25,6 +25,9 @@ RUN wget -q \
 ENV PATH="/tmp/miniconda/bin:$PATH"
 RUN pip install --no-cache-dir --prefer-binary pandas pyarrow wheel
 
+#Fix for https://stackoverflow.com/questions/51373063/pip3-bad-interpreter-no-such-file-or-directory
+RUN sed -i 's/\/tmp\/miniconda\/bin\/python/\/usr\/bin\/miniconda\/bin\/python/g' /tmp/miniconda/bin/pip
+
 FROM openjdk:11-jre-slim
 
 LABEL org.opencontainers.image.description "Docker image for Spark 3.1.2"
