@@ -36,7 +36,7 @@ RUN wget -q \
     && bash ./Miniconda3-latest-Linux-x86_64.sh -b -p /tmp/miniconda \
     && rm -f Miniconda3-latest-Linux-x86_64.sh
 ENV PATH="/tmp/miniconda/bin:$PATH"
-RUN pip install --no-cache-dir --prefer-binary pandas pyarrow
+RUN pip install --no-cache-dir --prefer-binary pandas pyarrow wheel
 
 FROM openjdk:11-jre-slim
 
