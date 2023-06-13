@@ -76,7 +76,7 @@ COPY --from=downloader ${spark_extracted_path}/python/lib ${SPARK_HOME}/python/l
 COPY --from=downloader /tmp/miniconda /usr/bin/miniconda
 
 ENV PATH="${SPARK_HOME}/bin:${SPARK_HOME}/sbin:/usr/bin/miniconda/bin:$PATH"
-# py4j path for spark version can be found at https://github.com/abin-tiger/spark/blob/master/sbin/spark-config.sh#L31
+# py4j path for spark version can be found in the Spark Github repository(https://github.com/apache/spark) in the file sbin/spark-config.sh. Make sure to check the checkout the Github tag which matches the Spark version
 ENV PYTHONPATH="${SPARK_HOME}/python/lib/py4j-0.10.9.2-src.zip:${SPARK_HOME}/python:${PYTHONPATH}"
 
 WORKDIR /opt/spark/work-dir
