@@ -1,0 +1,31 @@
+FROM spark:3.5.1-scala2.12-java17-python3-ubuntu
+
+ARG HADOOP_VERSION=3.3.4
+ARG AWS_JAVA_SDK_VERSION=1.12.262
+
+# Hadoop AWS library
+RUN wget --quiet -P "${SPARK_HOME}/jars/" "https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-common/${HADOOP_VERSION}/hadoop-common-${HADOOP_VERSION}.jar"
+RUN wget --quiet -P "${SPARK_HOME}/jars/" "https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/${AWS_JAVA_SDK_VERSION}/aws-java-sdk-bundle-${AWS_JAVA_SDK_VERSION}.jar"
+RUN wget --quiet -P "${SPARK_HOME}/jars/" "https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/${HADOOP_VERSION}/hadoop-aws-${HADOOP_VERSION}.jar"
+RUN wget --quiet -P "${SPARK_HOME}/jars/" "https://repo1.maven.org/maven2/org/wildfly/openssl/wildfly-openssl/1.0.7.Final/wildfly-openssl-1.0.7.Final.jar"
+
+# PostgreSQL library
+ARG POSTGRES_VERSION=42.6.0
+RUN wget --quiet -P "${SPARK_HOME}/jars/" "https://repo1.maven.org/maven2/org/postgresql/postgresql/${POSTGRES_VERSION}/postgresql-${POSTGRES_VERSION}.jar"
+RUN wget --quiet -P "${SPARK_HOME}/jars/" "https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.31.0/checker-qual-3.31.0.jar"
+# Delta IO libraries
+ARG DELTA_VERSION=3.0.0
+RUN wget --quiet -P "${SPARK_HOME}/jars/" "https://repo1.maven.org/maven2/io/delta/delta-spark_${SCALA_VERSION}/${DELTA_VERSION}/delta-spark_${SCALA_VERSION}-${DELTA_VERSION}.jar"
+RUN wget --quiet -P "${SPARK_HOME}/jars/" "https://repo1.maven.org/maven2/org/antlr/antlr4-runtime/4.9.3/antlr4-runtime-4.9.3.jar"
+RUN wget --quiet -P "${SPARK_HOME}/jars/" "https://repo1.maven.org/maven2/io/delta/delta-storage/${DELTA_VERSION}/delta-storage-${DELTA_VERSION}.jar"
+RUN wget --quiet -P "${SPARK_HOME}/jars/" "https://repo1.maven.org/maven2/io/delta/delta-storage-s3-dynamodb/${DELTA_VERSION}/delta-storage-s3-dynamodb-${DELTA_VERSION}.jar"
+
+#ABFS
+ARG ABFS_VERSION=3.3.6
+RUN wget --quiet -P "${SPARK_HOME}/jars/" "https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-azure/3.3.6/hadoop-azure-${ABFS_VERSION}.jar"
+RUN wget --quiet -P "${SPARK_HOME}/jars/" "https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-azure-datalake/3.3.6/hadoop-azure-datalake-${ABFS_VERSION}.jar"
+
+
+RUN wget -q https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.901/aws-java-sdk-bundle-1.11.901.jar \
+    https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.1/hadoop-aws-3.3.1.jar \
+    -P /${SPARK_HOME}/jars/
